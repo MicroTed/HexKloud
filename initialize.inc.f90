@@ -3,9 +3,9 @@
 !c      imass = 1
       imass = 0
 !      iper  = 0
-      iper  = 1
+!      iper  = 1
 !      jper  = 0
-      jper  = 1
+!      jper  = 1
 
 !      ur   = 0.
 !c      ur   = -6.

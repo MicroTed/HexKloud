@@ -189,7 +189,8 @@
 !      parameter (nx=43,ny=37)
 !      parameter (nx=61,ny=53)
 !      parameter (nx=181,ny=157)
-      parameter (nx=91,ny=79)
+!      parameter (nx=91,ny=79)
+       include "dims.inc.f90"
 !      parameter (nx=47,ny=40)
 !      parameter (nx=121,ny=105)
 !      parameter (nx=181,ny=53)

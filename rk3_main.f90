@@ -17,7 +17,9 @@
       implicit none
 !      parameter (nz= 41, nx= 61, ny= 53, nz1=nz-1, nx1=nx-1, ny1=ny-1)
 !      parameter (nz= 41, nx=181, ny=157, nz1=nz-1, nx1=nx-1, ny1=ny-1)
-      integer, parameter :: nz= 41, nx= 91, ny= 79, nz1=nz-1, nx1=nx-1, ny1=ny-1
+! NOTE: MUST ALSO SET    parameter (nx=91,ny=79) IN cpmpxy subroutine in rk3_plot.f90
+      include "dims.inc.f90"
+!      integer, parameter :: nz= 41, nx= 91, ny= 79, nz1=nz-1, nx1=nx-1, ny1=ny-1
 !      parameter (nz= 41, nx= 47, ny= 40, nz1=nz-1, nx1=nx-1, ny1=ny-1)
 !      parameter (nz= 41, nx= 121, ny=105, nz1=nz-1, nx1=nx-1, ny1=ny-1)
 !      parameter (nz= 41, nx= 181, ny= 53, nz1=nz-1, nx1=nx-1, ny1=ny-1)
@@ -107,9 +109,9 @@
       real :: dtseps, dtsf, dtsg
       real :: dx, dy, dz
       real :: epssm, f, fac1, fura, g, hm
-      integer :: i, ii, im1, ip, ip1, iper, ipf, ipi, iplt, ipp, n
+      integer :: i, ii, im1, ip, ip1, iper=1, ipf, ipi, iplt, ipp, n
       integer :: itr, ittrm, iwmax
-      integer :: j, j1, jj, jm1, jn, jp1, jper, jpf, jpi, jpj, jpm, jpp, jv1, jwmax
+      integer :: j, j1, jj, jm1, jn, jp1, jper=1, jpf, jpi, jpj, jpm, jpp, jv1, jwmax
       integer :: k, kk, kkk, km1, kwmax, nit, npl, npr, ns, ns0
       integer :: nxc, nxpl, nyc, nypl, nz2, nzpl
       real :: p0, pi, pitop, pressure, qvs
@@ -147,7 +149,8 @@
       character(len=6) :: order
       logical :: debug = .false.
 
-      namelist /main/ mp_physics, iadvord, nssl_2moment_on, nssl_cccn, delt, dt, iwty, debug
+      namelist /main/ mp_physics, iadvord, nssl_2moment_on, nssl_cccn, &
+                      delt, dt, iwty, debug, iper, jper
 
       INQUIRE(file=trim(filename), exist=if_exist)
 
@@ -163,7 +166,7 @@
         nmoist = 3
         nscalar = 0
         allocate( dz3d(1,1,1), dbz(1,1,1), ws(1,1,1), pres(1,1,1) )
-        dz3d(:,:,:) = dz
+!        dz3d(:,:,:) = dz
       elseif ( mp_physics == 18 ) then
         nmoist = 7
          if ( nssl_2moment_on == 1 ) then
@@ -178,7 +181,7 @@
          endif
          
         allocate( dz3d(nz1,nx,ny), dbz(nz1,nx,ny), ws(nz1,nx,ny), pres(nz1,nx,ny) )
-        dz3d(:,:,:) = dz
+!        dz3d(:,:,:) = dz
         allocate( rainnc(nx,ny), rainncv(nx,ny) )
        ! call init?
        nssl_params(:)  = 0
@@ -249,6 +252,8 @@
       include "initialize.inc.f90"
 !
 !--------------
+
+      dz3d(:,:,:) = dz
 
       Azero(1) = 0.0
 
@@ -808,35 +813,35 @@
 
 !         pres(1:nz1,1:nx,1:ny) = 1.e5*p(1:nz1,1:nx,1:ny)**(1./.2875)
          
-         CALL nssl_2mom_driver(                          &
-                     ITIMESTEP=nit,                      &
-                     TH=t,                              &
-                     QV=qx(1,1,1,lv),                         &
-                     QC=qx(1,1,1,lc),                         &
-                     QR=qx(1,1,1,lr),                         &
-                     QI=qx(1,1,1,li),                         &
-                     QS=qx(1,1,1,ls),                         &
-                     QH=qx(1,1,1,lh),                         &
-                     QHL=qx(1,1,1,lhl),                        &
- !                    CCW=qnc_curr,                       &
-                     CCW=sx(1,1,1,lnc),                    &
-                     CRW=sx(1,1,1,lnr),                       &
-                     CCI=sx(1,1,1,lni),                       &
-                     CSW=sx(1,1,1,lns),                       &
-                     CHW=sx(1,1,1,lnh),                       &
-                     CHL=sx(1,1,1,lnhl),                       &
-                     VHW=sx(1,1,1,lvh), f_vhw=(lvh > 1),      &
-                     VHL=sx(1,1,1,lvhl), f_vhl=(lvhl > 1),      &
+         CALL nssl_2mom_driver(                           &
+                     ITIMESTEP=nit,                       &
+                     TH=t,                                &
+                     QV=qx(1,1,1,lv),                     &
+                     QC=qx(1,1,1,lc),                     &
+                     QR=qx(1,1,1,lr),                     &
+                     QI=qx(1,1,1,li),                     &
+                     QS=qx(1,1,1,ls),                     &
+                     QH=qx(1,1,1,lh),                     &
+                     QHL=qx(1,1,1,lhl),                   &
+ !                    CCW=qnc_curr,                        &
+                     CCW=sx(1,1,1,lnc),                   &
+                     CRW=sx(1,1,1,lnr),                   &
+                     CCI=sx(1,1,1,lni),                   &
+                     CSW=sx(1,1,1,lns),                   &
+                     CHW=sx(1,1,1,lnh),                   &
+                     CHL=sx(1,1,1,lnhl),                  &
+                     VHW=sx(1,1,1,lvh), f_vhw=(lvh > 1),  &
+                     VHL=sx(1,1,1,lvhl), f_vhl=(lvhl > 1),&
 !                      ZRW=qzr_curr,  f_zrw = f_qzr,       &
 !                      ZHW=qzg_curr,  f_zhw = f_qzg,       &
 !                      ZHL=qzh_curr,  f_zhl = f_qzh,       &
-                     cn=sx(1,1,1,lccn),  f_cn=(lccn > 1),    &
-                     PII=pb,                               &
-                     P=pres,                                &
-                     W=ws,                               &
-                     DZ=dz3d,                            &
-                     DTP=dt,                             &
-                     DN=rho,                             &
+                     cn=sx(1,1,1,lccn),  f_cn=(lccn > 1), &
+                     PII=pb,                              &
+                     P=pres,                              &
+                     W=ws,                                &
+                     DZ=dz3d,                             &
+                     DTP=dt,                              &
+                     DN=rho,                              &
                       RAINNC   = RAINNC,                  &
                       RAINNCV  = RAINNCV,                 &
 !                      SNOWNC   = SNOWNC,                  &
@@ -846,16 +851,12 @@
 !                      GRPLNC   = GRAUPELNC,               &
 !                      GRPLNCV  = GRAUPELNCV,              &
 !                      SR=SR,                              &
-                     dbz      = dbz      ,               &
+                     dbz      = dbz      ,                &
 !                     ssat3d   = ssat,  f_ssat=f_ssat,    &
 !                     ssati    = ssati, f_ssati=f_ssati,  &
-!#if ( WRF_CHEM == 1 )
-!                    WETSCAV_ON = config_flags%wetscav_onoff == 1, &
-!                    EVAPPROD=evapprod,RAINPROD=rainprod, &
-!#endif
-                     nssl_progn=.false.,              &
-                     diagflag = .true.,                &
-                     ke_diag = nz1,                &
+                     nssl_progn=.false.,                  &
+                     diagflag = .true.,                   &
+                     ke_diag = nz1,                       &
 !                      cu_used=cu_used,                    &
 !                      qrcuten=qrcuten,                    &  ! hm
 !                      qscuten=qscuten,                    &  ! hm
@@ -869,7 +870,7 @@
 !                      has_reqs=has_reqs,                  & ! ala G. Thompson
 !                      hail_maxk1=hail_maxk1,              &
 !                      hail_max2d=hail_max2d,              &
-                     nwp_diagnostics=0, &
+                     nwp_diagnostics=0,                    &
                   IDS=ids,IDE=ide, JDS=jds,JDE=jde, KDS=kds,KDE=kde, &
                   IMS=ims,IME=ime, JMS=jms,JME=jme, KMS=kms,KME=kme, &
                   ITS=its,ITE=ite, JTS=jts,JTE=jte, KTS=kts,KTE=kte  &
