@@ -4,8 +4,12 @@
 !
       subroutine init_sound(t,qv,u1z,u2z,u3z,zg,n)
 
+      implicit none
       integer n
       real    t(n),qv(n),u1z(n),u2z(n),u3z(n),zg(n)
+      real :: pi, ztr,alpha,vs,angle,thetar,ttr,qv0m,thetas,zts
+      real :: cc1,cc2,umax,vmax,u1max,u2max,u3max,z,ztp
+      integer :: nz1,k
 
       pi     = 4.*atan(1.)
       nz1    = n

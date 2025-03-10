@@ -1,5 +1,11 @@
       subroutine wplot(wmax,waxis,wmplt,ip,lsteps,nsteps)
+
+      implicit none
+
+      real :: wmax,waxis,wmplt
+      integer :: ip,lsteps,nsteps
       character*25 pltlab
+
       pltlab = 'Maximum Vertical Velocity'
       call set(0.,1.,0.,1.,0.,1.,0.,1.,1)
       call plchlq(.5,.97,pltlab,.02,0,0)
@@ -16,6 +22,10 @@
 !
       subroutine conplot(array,n1,n1p,n2,cmn,cmx,cis,field,plane,stag,  &
      &                  time,pl,pr,pb,pt,al,ar,ab,at,dx,dz)
+      implicit none
+      
+      integer :: n1,n1p,n2
+      real :: cmn,cmx,cis,time,pl,pr,pb,pt,al,ar,ab,at,dx,dz
       real array(n1,n2)
       real*4 aln,arn,abn,atn
       character*8 label(3)
@@ -24,6 +34,11 @@
       character*2 field
       character*6 plane
       equivalence (pltlab,label)
+      integer :: itick1,itick2,itime
+      integer :: ISIZEL     ,ISIZEM     ,ISIZEP     ,NREP,  &
+                 NCRT       ,ILAB       ,NULBLL     ,IOFFD, &
+                 IOFFM      ,ISOLID     ,NLA    , NLM
+      real    :: EXT, XLT        ,YBT        ,SIDE
       COMMON /CONRE4/ ISIZEL     ,ISIZEM     ,ISIZEP     ,NREP       ,  &
      &                NCRT       ,ILAB       ,NULBLL     ,IOFFD      ,  &
      &                EXT        ,IOFFM      ,ISOLID     ,NLA        ,  &
@@ -65,14 +80,21 @@
 !
       subroutine trplot(array,n1,n2,cmn,cmx,cis,field,plane,stag,  &
      &                  time,pl,pr,pb,pt,al,ar,ab,at,dx,dz)
+      implicit none
+      integer :: n1,n2
+      real :: cmn,cmx,cis,time,pl,pr,pb,pt,al,ar,ab,at,dx,dz
+      integer lrwk,liwk
       parameter (lrwk=1500,liwk=2500)
-      dimension rwrk(lrwk),iwrk(liwk),array(n1,n2)
+      real :: rwrk(lrwk),array(n1,n2)
+      integer :: iwrk(liwk)
       character*2  stag
       character*8  label(3)
       character*24 pltlab
       character*2 field
       character*6 plane
       equivalence (pltlab,label)
+      integer :: itick1,itick2,iclv,iiwu,irwu,nclv,imap,itime
+      real :: clv
  
 !     put header label at top of frame
 
@@ -186,18 +208,30 @@
 !---------------------------------------------------------------------
 !
       subroutine cpmpxy(imap,xinp,yinp,xotp,yotp)
+      
+      implicit none
+      
+      integer :: imap
+      real :: xinp,yinp,xotp,yotp
+!      integer nx,ny
 !      parameter (nx=43,ny=37)
 !      parameter (nx=61,ny=53)
 !      parameter (nx=181,ny=157)
-      parameter (nx=91,ny=79)
+!      parameter (nx=91,ny=79)
+       include "dims.inc.f90"
 !      parameter (nx=47,ny=40)
 !      parameter (nx=121,ny=105)
 !      parameter (nx=181,ny=53)
 !      parameter (nx=101,ny=5)
 !      parameter (nx=5,ny=101)
 
-      common /grid/ xh(nx,ny),xu1(nx,ny),xu2(nx,ny),xu3(nx,ny),  &
+      real :: xh(nx,ny),xu1(nx,ny),xu2(nx,ny),xu3(nx,ny),  &
      &              yh(nx,ny),yu1(nx,ny),yu2(nx,ny),yu3(nx,ny)
+
+      common /grid/ xh, xu1, xu2, xu3, yh, yu1, yu2, yu3
+
+      integer :: im,ip,km,kp
+      real :: fri,frk,xm,xp,ym,yp
 
       if(imap.eq.1)  then
          im  = int(xinp)
@@ -284,6 +318,7 @@
       SUBROUTINE TRPLOTC(ARRAY,N1,N2,CMN,CMX,CIS,FIELD,PLANE,STAG,  &
      &           TIME,PL,PR,PB,PT,AL,AR,AB,AT,DX,DZ,COLOR)
 !
+        integer lrwk,liwk,ncra,nama
         PARAMETER (NAMA=400000,LRWK=1000,LIWK=5000,NCRA=20000)
 !
 ! Declare required data arrays and workspace arrays.

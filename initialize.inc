@@ -74,8 +74,8 @@ c      xnu   = .0
 c      smdiv = .0
       epssm = .1
 
-      tip   = 300. ! plotting interval
-
+      tip   = 600. ! plotting interval
+c      tip   = 300.
       ip    = nint(tip/dt)
 	  
 c	  ip = 1
