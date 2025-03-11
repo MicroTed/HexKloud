@@ -1223,6 +1223,12 @@ MODULE module_mp_nssl_2mom
 ! #####################################################################
 ! #####################################################################
 
+
+ logical function wrf_dm_on_monitor()
+   implicit none
+   wrf_dm_on_monitor = .true.
+  end function wrf_dm_on_monitor
+
 ! #ifdef CCPPFLAG
  SUBROUTINE wrf_debug( level, message )
    implicit none
@@ -1345,7 +1351,6 @@ MODULE module_mp_nssl_2mom
 
     integer :: igvol_local = 1
     logical :: wrote_namelist = .false.
-    logical :: wrf_dm_on_monitor
     integer :: hail_on = -1, density_on = -1, icecrystals_on = 1
     integer :: ccn_on = -1
 
@@ -1458,12 +1463,11 @@ MODULE module_mp_nssl_2mom
 
     ipconc = ipctmp
     
-    IF ( ipconc < 5 ) THEN
-       ihlcnh = 0
-    ENDIF
 
     IF ( ihlcnh <= 0 ) THEN
-      IF ( ipconc == 5 ) THEN
+      IF ( ipconc < 5 ) THEN
+        ihlcnh = 0
+      ELSEIF ( ipconc == 5 ) THEN
        ihlcnh = 3
       ELSEIF ( ipconc >= 6 ) THEN
        ihlcnh = 3
@@ -1504,7 +1508,7 @@ MODULE module_mp_nssl_2mom
 #endif
       ENDIF
         IF ( wrf_dm_on_monitor() .and. .not. wrote_namelist ) THEN
-          open(15,file='namelist.output',status='old',action='readwrite', position='append',form='formatted')
+          open(15,file='nssl_mp_params.out',status='unknown',form='formatted')
           write(15,NML=nssl_mp_params)
           close(15)
           wrote_namelist = .true.
@@ -1790,6 +1794,10 @@ MODULE module_mp_nssl_2mom
           lvh = 9
           ltmp = 9
           denscale(lvh) = 1
+         ELSE
+          ltmp = lhab
+          lvh = 0
+          lvhl = 0
          ENDIF
        ELSE ! no hail, 'LFO' scheme
        ltmp = lhab
@@ -2875,6 +2883,12 @@ SUBROUTINE nssl_2mom_driver(qv, qc, qr, qi, qs, qh, qhl, ccw, crw, cci, csw, chw
           ancuten(its:ite,1,kts:kte,:) = 0.0
           thproclocal(:,:) = 0.0
 
+!$OMP PARALLEL DO DEFAULT(SHARED) &
+!$OMP PRIVATE(ix,jy,kz,xfall,axtra2d,an,t0,t1,t2,t3,t4,t5,t6,t7,t8,t9, &
+!$OMP t00,t77,dbz2d,vzf2d,dn1,pn,wn,dz2d,dz2dinv,ltemq,ssival,dp1,    &
+!$OMP elec2,thproclocal,t8s,t9s,il,n,ssat,loopcnt,   &
+!$OMP qvapor,ssifac,ancuten,rainprod2d,evapprod2d,kediagloc,alpha2d, &
+!$OMP hailmax1d,hailmaxk1)
 
      DO jy = jts,jye
      
@@ -2965,7 +2979,7 @@ SUBROUTINE nssl_2mom_driver(qv, qc, qr, qi, qs, qh, qhl, ccw, crw, cci, csw, chw
           an(ix,1,kz,lnh)  = chw(kz,ix,jy)
           IF ( lhl > 1 ) an(ix,1,kz,lnhl) = chl(kz,ix,jy)
           ENDIF
-          IF ( lvh > 0 ) an(ix,1,kz,lvh)  = vhw(kz,ix,jy)
+          IF ( lvh > 0 .and. present( vhw ) ) an(ix,1,kz,lvh)  = vhw(kz,ix,jy)
           IF ( lvhl > 0 .and. present( vhl ) ) an(ix,1,kz,lvhl)  = vhl(kz,ix,jy)
 
           IF ( ipconc >= 6 ) THEN
@@ -3559,7 +3573,7 @@ SUBROUTINE nssl_2mom_driver(qv, qc, qr, qi, qs, qh, qhl, ccw, crw, cci, csw, chw
 
 
 
-         IF ( lvh > 0 )  vhw(kz,ix,jy) = an(ix,1,kz,lvh)
+         IF ( lvh > 0 .and. present( vhw ) )  vhw(kz,ix,jy) = an(ix,1,kz,lvh)
          IF ( lvhl > 0 .and. present( vhl ) ) vhl(kz,ix,jy) = an(ix,1,kz,lvhl)
 
 #if ( WRF_CHEM == 1 )
@@ -19208,8 +19222,6 @@ END SUBROUTINE nssl_2mom_driver
 
        ELSEIF ( ibinhlmlr == 1 ) THEN ! use incomplete gamma functions to approximate the bin results
 
-! #ifdef 1
-! #if (defined 1) && defined( COMMAS ) || defined( COMMASTMP )
 
        ELSEIF ( ibinhlmlr == -1 ) THEN ! OLD VERSION use incomplete gamma functions to approximate the bin results
 
@@ -21007,7 +21019,7 @@ END SUBROUTINE nssl_2mom_driver
 !      qhlcnh(mgs) = 0.0
 !      chlcnh(mgs) = 0.0
       if ( wetgrowth(mgs) .and. temg(mgs) .lt. tfr-5. .and. qx(mgs,lh) > qxmin(lh) ) then
-      if ( qhacw(mgs).gt.1.e-6 .and. xdn(mgs,lh) > 700. ) then
+      if ( qhacw(mgs).gt.1.e-6 .and. ( xdn(mgs,lh) > 700. .or. lvh == 0 ) ) then
       qhlcnh(mgs) =                                                   &
         ((pi*xdn(mgs,lh)*cx(mgs,lh)) / (6.0*rho0(mgs)*dtp))           &
        *exp(-hldia1/xdia(mgs,lh,1))                                    &

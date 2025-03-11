@@ -16,7 +16,7 @@ OBJS = rk3_main.o rk3_init.o rk3_plot.o rk3_rhss.o rk3_rhsu1.o \
 rk3_moist:  $(OBJS) plotting.inc.f90 initialize.inc.f90 boundaries.inc.f90
 	ncargf90 $(OMP) -o rk3_moist  $(OBJS)
 
-rk3_main.o: rk3_main.f90 plotting.inc.f90 initialize.inc.f90 boundaries.inc.f90 dims.inc.f90
+rk3_main.o: rk3_main.f90 module_mp_nssl_2mom.o plotting.inc.f90 initialize.inc.f90 boundaries.inc.f90 dims.inc.f90
 	ncargf90 -c $(OMP) rk3_main.f90
 
 rk3_plot.o: rk3_plot.f90 dims.inc.f90

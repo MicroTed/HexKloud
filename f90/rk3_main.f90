@@ -160,6 +160,7 @@
        open(15,file=trim(filename),status='old',form='formatted')
        rewind(15)
        read(15,NML=main)
+       close(15)
       endif
 
       if ( mp_physics == 1 ) then
@@ -201,7 +202,7 @@
        nssl_params(14) = 0 ! reserved
        nssl_params(15) = 0 ! reserved
          CALL nssl_2mom_init(nssl_params=nssl_params,ipctmp=i,mixphase=0, &
-           nssl_density_on=.true.,                             &
+           nssl_density_on= ( i >= 5 ),                             &
            nssl_hail_on=.true.,                                &
            nssl_ccn_on= ( i >= 5 ),                            &
            nssl_icdx=6,                                        &
