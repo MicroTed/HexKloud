@@ -8,6 +8,12 @@ To compile you need the following environment variables set:
 NETCDF_INC  --> points to your netCDF4 include directory
 NETCDF_LIB  --> points to your netCDF4 library directory
 
+For example, in bash shell,
+
+export NETCDF_INC=/Users/Shared/opt/local/netcdf480ser/include
+export NETCDF_LIB=`/Users/Shared/opt/local/netcdf480ser/bin/nf-config --flibs`
+
+
 !=========================================
 Compiler
 
@@ -91,10 +97,10 @@ NCARG version (makes ncdf and ncar graphics)
 !-----------------------------------------
 !
 !   nx,ny,nz : grid dimensions
-
-!     xl : east-west domain size
-!                                d = 2.*xl/(sqrt(3.)*float(nx-1))
-!     xl = ((sqrt(3.)/2.)*(nx-1)*d
+!     xl : east-west domain size, from which 'd' is calculated by 
+!          inverting xl = ((sqrt(3.)/2.)*(nx-1)*d as
+!     d = 2.*xl/(sqrt(3.)*float(nx-1))
+!   and yl is then set by d and ny
 !     yl = d*(ny-1)
 !-----------------------------------------
 !
