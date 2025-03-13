@@ -54,7 +54,7 @@
      zinv  = 10000.
      xn    = sqrt(xn2)
 !    f     = .0001
-     f     = 0.
+     f     = 0. ! f-plane Coriolis
 
      hm    = 0. ! mountain height
      ampl  = 1.
@@ -92,12 +92,12 @@
 !     tstp  = 12.*ip*dt ! total time is X plotting intervals
      nz2   = nz1-1
      t0    = 300.
-     r     = 287.
-     cp    = 1003.
+!     r     = 287.
+!     cp    = 1003.
      rcv   = r/(cp-r)
-     p0    = 100000.
+!     p0    = 100000.
      cti   = 1./(cp*t0)
-     g     = 9.81
+!     g     = 9.81
      c2    = cp*rcv*t0
      cb    = 25.
      delt = delt/t0
@@ -246,14 +246,17 @@
      do j=1,ny
         do i=1,nx
            hs(i,j) = hm/(1.+((xh(i,j)-xc)/xa)**2+((yh(i,j)-yc)/ya)**2)
-           if(mod(i,2).eq.0)  then
-              hxpl(i) = ampl*.5*(hs(i,nyc)+hs(i,nyc+1))
-           ELSE
-              hxpl(i) = ampl*hs(i,nyc)
-           END IF
            hh(i,j) = zt/(zt-hs(i,j))
         end do
      end do
+
+      do i=1,nx
+         if(mod(i,2).eq.0)  then
+            hxpl(i) = ampl*.5*(hs(i,nyc)+hs(i,nyc+1))
+         ELSE
+            hxpl(i) = ampl*hs(i,nyc)
+         END IF
+      enddo
  
      if(iper.eq.0)  then
         do j=1,ny

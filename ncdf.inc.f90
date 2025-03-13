@@ -330,11 +330,15 @@
                  jp1 =min(jj+1,ny)
                  if(jper*jj.eq.ny)  jp1 = 2
 
-                 ncdf_var(i,j,k,2) = 0.5*(u2(k,ii,jj)+u2(k,ii,jp1))
+                 ncdf_var(i,j,k,2) = u2(k,ii,jj)
                  ncdf_var(i,j,k,3) = .25*(w(k,ii,jj )+w(k+1,ii,jj )  &
                                          +w(k,ii,jp1)+w(k+1,ii,jp1))
               else
-                 ncdf_var(i,j,k,2) = u2(k,ii,jj)
+                  jp1 = min(jj+1,ny)
+                  if(jper*jj.eq.ny )  jp1 = 2
+                  jm1 = max(jj-1,1)
+                  if(jper*jj.eq.1  )  jm1 = ny1
+                 ncdf_var(i,j,k,2) = 0.5*(u2(k,ii,jj)+u2(k,ii,jm1))
                  ncdf_var(i,j,k,3) = .5*(w(k,ii,jj)+w(k+1,ii,jj))
               end if
            end do

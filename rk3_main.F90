@@ -17,7 +17,13 @@
 
       USE module_mp_nssl_2mom, only: nssl_2mom_driver, nssl_2mom_init
 
-      USE rk3_grid, only : nx,ny,nz,xh,xu1,xu2,xu3, yh,yu1,yu2,yu3
+      USE rk3_grid, only : nx,ny,nz,xh,xu1,xu2,xu3, yh,yu1,yu2,yu3,xl,yl,zl, &
+                           dx,dy,dz, &
+                           xpll,xplr,ypll,yplr, zplb, zplt, wmplt, dxp,dyp,dzp
+
+      use rk3_param, only : pi,angle,um,vm,u1m,u3m,u2m,ur,side, d, &
+                            g, f, t0, r, cp, p0, rcv, cti, c2, cb, &
+                            delt
 
       implicit none
 
@@ -60,11 +66,10 @@
       real, allocatable, dimension(:,:) :: plt,pltx,plty
       real, allocatable, dimension(:) :: hxpl,x,y
       
-      real*4 time,pxl,pxr,pyl,pyr,pzl,zptop,xpll,xplr  &
-     &      ,ypll,yplr,zplb,zplt,dxp,dyp,dzp,wmax(2401),waxis(2401)  &
-     &      ,wmplt
+      real :: time,pxl,pxr,pyl,pyr,pzl,zptop,  &
+     &      wmax(2401),waxis(2401) 
 
-      real*4 Azero(1)
+      real :: Azero(1)
 
       integer imass, rk_step, ns_rk, total_steps
       character*3 slice(2)
@@ -73,11 +78,11 @@
 
       integer, PARAMETER :: IERF=6,LUNI=2,IWID=1  
       integer :: IWTY = 20 !  1=ncgm/gmeta; 20=PostScript
-      real :: ampl, angle, area, c1f, c2, c2f, cb
-      real :: cofrz, cp, cti, d, dtl, dts, dtsa, dtsd
+      real :: ampl, area, c1f, c2f
+      real :: cofrz, dtl, dts, dtsa, dtsd
       real :: dtseps, dtsf, dtsg
-      real :: dx, dy, dz
-      real :: epssm, f, fac1, fura, g, hm
+!      real :: dx, dy, dz
+      real :: epssm, fac1, fura, hm
       integer :: i, ii, im1, ip, ip1, iper, ipf, ipi, iplt, ipp, n
       integer :: itr, ittrm, iwmax
       integer :: j, j1, jj, jm1, jn, jp1, jper, jpf, jpi, jpj, jpm, jpp, jv1, jwmax
@@ -85,17 +90,16 @@
       integer :: k, kk, kkk, km1, kwmax, nit, npl, npr, ns, ns0
       integer :: nxc, nxpl, nyc, nypl, nz2, nzpl
       integer :: nxnc, nync
-      real :: p0, pi, pitop, pressure, qvs
-      real :: r, rad, radx, rady, radz, rcv, rd
+      real :: pitop, pressure, qvs
+      real :: rad, radx, rady, radz, rd, zd, zt
       real :: rdx, rdy, rdz
       real :: resm, ritot, rrtot, rtot, rttop, rula
-      real :: side, smdiv, smdivx, smdivz, sum
-      real :: t0, tdiff, temp, thetak, tinit, tk, tkm1, tkp1
-      real :: tmax, u1m, u2m, u3m, um, ub, ur, vm, vnu, xa, xc
+      real :: smdiv, smdivx, smdivz, sum
+      real :: tdiff, temp, thetak, tinit, tk, tkm1, tkp1
+      real :: tmax, ub, vnu, xa, xc
       real :: xht, xn, xn2, xn2l, xn2m, xnu, xnus, xnus0, xnusz, xnusz0, xnut
-      real :: ya, yc, yl, yht
-      real :: xl = 84000., zl = 20000.
-      real :: zcent, zd, zinv, zt, ztemp
+      real :: ya, yc, yht
+      real :: zcent, zinv, ztemp
       integer, parameter :: lv = 1
       integer :: lc = 2, lr = 3
       integer :: li = 4, ls = 5, lh = 6, lhl = 7
@@ -110,9 +114,10 @@
                  nssl_rho_qh=600., nssl_rho_qhl=800., nssl_rho_qs=100.
 
       integer           :: nssl_ccn_is_ccna=1, nssl_2moment_on=1, nssl_3moment = 0
+      integer           :: nssl_density_on = -1
       integer           :: mp_physics = 1 ! microphysics: 1=kessler; 18= NSSL 2-moment
 
-      real              :: delt  = 3.     ! bubble temp
+!      real              :: delt  = 3.     ! bubble temp
       real              :: dt    = 6.0    ! time step
       logical           :: debug = .false.
       logical           :: doplot = .true. ! flag for ncarg plotting
@@ -191,6 +196,8 @@
 
          IF ( nssl_2moment_on == 1 ) THEN
 
+            if ( nssl_density_on < 0 ) nssl_density_on = 1
+
             if ( nssl_3moment == 1 ) then
               i = 8
               nscalar = 9+3
@@ -202,10 +209,17 @@
 
          ELSEIF ( nssl_2moment_on == 0 ) THEN
 
+            if ( nssl_density_on < 0 ) nssl_density_on = 0
             i = 0
             nscalar = 0
             lnc = 0; lnr = 0; lni = 0; lns = 0; lnh = 0; lnhl = 0; lccn = 0
-            lvh = 0; lvhl = 0
+            lvhl = 0
+            IF ( nssl_density_on > 0 ) THEN
+              nscalar = 1
+              lvh = 1
+            ELSE
+              lvh = 0
+            ENDIF
             nssl_ccn_is_ccna = 0
 
          ENDIF
@@ -232,7 +246,7 @@
          nssl_params(14) = 0 ! reserved
          nssl_params(15) = 0 ! reserved
          CALL nssl_2mom_init(nssl_params=nssl_params,ipctmp=i,mixphase=0,        &
-                             nssl_density_on= ( i >= 5 ),                        &
+                             nssl_density_on= ( nssl_density_on > 0 ),           &
                              nssl_hail_on=.true.,                                &
                              nssl_ccn_on= ( i >= 5 ),                            &
                              nssl_icdx=6,                                        &
@@ -492,7 +506,6 @@
      &               Azero, 1  ,1,1,flux1,flux2,flux3,fluxz,hh_sca_adv,v_sca_adv)
          enddo
 
-! first moments of qx's
 
 ! other scalars
          if ( nscalar > 0 ) then
@@ -1016,7 +1029,7 @@
 !            do k=1,nz1
 !              if(mod(i,2).eq.0.)  then
 !                 nyj=ny+1-j
-!                 nyj=nyc+1-j
+!!                 nyj=nyc+1-j
 !                 if(nyj.lt.1)  nyj=nyj+ny1
 !                  vdiff=abs(u2(k,i,j)+u2(k,i,nyj))
 !              else
@@ -1059,7 +1072,9 @@
 !===============================================================================
 ! Uncomment out for NCAR GRAPHICS
 !
-!     call clsgks()
+#ifdef USENCARG
+      call clsgks()
+#endif
 
       stop
       end

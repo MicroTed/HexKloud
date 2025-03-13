@@ -53,6 +53,8 @@
 
             if(iplt.eq.1)  then       
 
+         if ( doplot ) then
+
             pzl = .05
             zptop = 0.05 + 0.9*0.8
             zptop = .95
@@ -67,14 +69,15 @@
            pxl = .5 - .45*(xplr-xpll)/(yplr-ypll)
            pxr = .5 + .45*(xplr-xpll)/(yplr-ypll)
         end if
+
+
+
 !
 !************  Maximum vertical velocity
 !
         call wplot(wmax,waxis,wmplt,ip,nit+1,total_steps)
         write(6,*) 'i,j,k,wmax: ', IWMAX,JWMAX,KWMAX,WMAX(nit+1)
         
-         if ( doplot ) then
-
 !            go to 122
 
 !
