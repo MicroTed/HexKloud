@@ -66,7 +66,7 @@
 !    ns0   = 8
 !    ns0   = 4
       
-     vnu   = 500.
+!     vnu   = 500.
      xnu   = vnu*dt/d**2
       
 !    xnu   = .015

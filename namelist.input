@@ -37,16 +37,16 @@
 !
 &main
   mp_physics = 18,
-  nssl_2moment_on = 1,
+  nssl_2moment_on = 0,
 !  nssl_3moment = 1,
   h_mom_adv = 5
   v_mom_adv = 3
-  h_sca_adv = 33
-  v_sca_adv = 3
+  h_sca_adv = 55
+  v_sca_adv = 55
   delt = 3.0
   iwty = 20 
   debug = .false.
-  runname = 'n2mweno',
+  runname = 'n1m5wen500vnu',
   writenc = .true.,
   doplot = .true.,
   ncuopt = 3,
@@ -74,11 +74,17 @@
 &gridtime
   dt   = 10.0
   tstp = 7200,
-  tip  =  600.,
+  tip  =  300.,
   nz   = 41,
   nx   = 91, 
   ny   = 79,
   xl   = 84000.,
+/
+!=========================================
+!  'params' namelist
+!=========================================
+&params
+   vnu = 500.0
 /
 !
 !=========================================

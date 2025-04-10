@@ -23,7 +23,7 @@
 
       use rk3_param, only : pi,angle,um,vm,u1m,u3m,u2m,ur,side, d, &
                             g, f, t0, r, cp, p0, rcv, cti, c2, cb, &
-                            delt
+                            delt, vnu
 
       implicit none
 
@@ -66,8 +66,8 @@
       real, allocatable, dimension(:,:) :: plt,pltx,plty
       real, allocatable, dimension(:) :: hxpl,x,y
       
-      real :: time,pxl,pxr,pyl,pyr,pzl,zptop,  &
-     &      wmax(2401),waxis(2401) 
+      real :: time,pxl,pxr,pyl,pyr,pzl,zptop, wmax(2401),waxis(2401) 
+      integer :: istat
 
       real :: Azero(1)
 
@@ -96,7 +96,7 @@
       real :: resm, ritot, rrtot, rtot, rttop, rula
       real :: smdiv, smdivx, smdivz, sum
       real :: tdiff, temp, thetak, tinit, tk, tkm1, tkp1
-      real :: tmax, ub, vnu, xa, xc
+      real :: tmax, ub, xa, xc
       real :: xht, xn, xn2, xn2l, xn2m, xnu, xnus, xnus0, xnusz, xnusz0, xnut
       real :: ya, yc, yht
       real :: zcent, zinv, ztemp
@@ -155,6 +155,8 @@
                       ncuopt,ncupert, h_mom_adv, v_mom_adv, h_sca_adv, v_sca_adv
 
       namelist /gridtime/ nx,ny,nz,xl,yl,zl,dt,tstp,tip
+      
+      namelist /params/ vnu
 
 ! Start here and read namelist
 
@@ -166,10 +168,25 @@
   
        iunit = 15
        open(15,file=trim(filename),status='old',form='formatted')
+
        rewind(15)
-       read(15,NML=main)
+       read(15,NML=main,iostat=istat)
+       IF ( istat .ne. 0 ) THEN
+        write(0,*) 'Problem reading namelist: main -- not found or bad token'
+       ENDIF
+       write(6,NML=main)
        rewind(15)
-       read(15,NML=gridtime)
+       read(15,NML=gridtime,iostat=istat)
+       IF ( istat .ne. 0 ) THEN
+        write(0,*) 'Problem reading namelist: gridtime -- not found or bad token'
+       ENDIF
+       write(6,NML=gridtime)
+       rewind(15)
+       read(15,NML=params,iostat=istat)
+       IF ( istat .ne. 0 ) THEN
+        write(0,*) 'Problem reading namelist: params -- not found or bad token'
+       ENDIF
+       write(6,NML=params)
        close(15)
 
       ELSE

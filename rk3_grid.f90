@@ -31,6 +31,7 @@
        real, parameter :: r = 287., cp = 1003., p0 = 100000.
        real    :: rcv, cti, c2
        real    :: cb = 25., delt = 3.0
+       real    :: vnu = 500.
 
 
      END MODULE RK3_PARAM
